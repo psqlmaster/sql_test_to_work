@@ -1,22 +1,56 @@
 -- @sqlmaster
---По таблицам Income и Outcome для каждого пункта приема найти остатки денежных средств на конец каждого дня, 
---в который выполнялись операции по приходу и/или расходу на данном пункте
+/*По таблицам Income и Outcome для каждого пункта приема найти остатки денежных средств на конец каждого дня, 
+в который выполнялись операции по приходу и/или расходу на данном пункте.
+*/
 
+DECLARE @Income TABLE
+(
+	code INT IDENTITY PRIMARY KEY,
+    point TINYINT,
+    date DATETIME,
+	inc SMALLMONEY
+);
+
+INSERT INTO @Income
+VALUES
+(1, '2019-07-08', 100),
+(1, '2019-07-09', 200),
+(2, '2019-07-08', 500),
+(2, '2019-07-10', 1000),
+(3, '2019-07-10', 5000),
+(3, '2019-07-10', 7000);
+
+DECLARE @Outcome TABLE
+(
+	code INT IDENTITY PRIMARY KEY,
+    point TINYINT,
+    date DATETIME,
+	out SMALLMONEY
+);
+
+INSERT INTO @Outcome
+VALUES
+(1, '2019-07-08', 50),
+(1, '2019-07-09', 100),
+(2, '2019-07-08', 250),
+(2, '2019-07-10', 500),
+(3, '2019-07-10', 4000),
+(3, '2019-07-10', 5000);
 
 WITH t
 AS (SELECT point,
            date,
            inc,
            0 out
-    FROM Income
+    FROM @Income
     UNION ALL
     SELECT point,
            date,
            0 inc,
            out
-    FROM Outcome)
+    FROM @Outcome)
 SELECT t.point,
-       CONVERT(VARCHAR, CAST(t.date AS DATE), 103) dat,
+       CONVERT(VARCHAR, CAST(t.date AS DATE), 101) dat,
        (
            SELECT SUM(i.inc)FROM t i WHERE i.date <= t.date AND i.point = t.point
        ) -
