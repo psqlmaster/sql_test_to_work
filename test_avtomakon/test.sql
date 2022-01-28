@@ -122,9 +122,7 @@ id	Name	 property	date
 5	EEE	2	2020-10-11
 6	FFF	1	2020-10-13
 */
-DROP TABLE IF EXISTS A;
-
-CREATE TABLE A
+DECLARE @A TABLE
 (
     [ID] [INT],
     [name] [VARCHAR](50),
@@ -132,7 +130,7 @@ CREATE TABLE A
     date DATE
 );
 
-INSERT INTO A
+INSERT INTO @A
 (
     ID,
     name,
@@ -152,33 +150,32 @@ VALUES
 --Написать запрос, который выберет такие записи. 
 --Написать скрипт, который позволит избавиться от ненужных дублей (допускается модификация таблицы, использование других объектов, переименование и т.п.).
 SELECT *
-FROM A;
+FROM @A;
+--выводим дубликаты
+SELECT *
+FROM
+(
+    SELECT *,
+           ROW_NUMBER() OVER (PARTITION BY ID, name, property, date ORDER BY date) N
+    FROM @A
+) A
+WHERE A.N = 1
+ORDER BY A.ID;
 
-select * FROM
-    (
-    SELECT id,name,property,date, ROW_NUMBER() OVER(ORDER BY id,name,property,date) AS RowNum 
-    FROM A
-    )D
-    JOIN
-    (
-    SELECT id,name,property,date, ROW_NUMBER() OVER(ORDER BY id,name,property,date) AS RowNum 
-    FROM A
-    )E
-on D.id = E.id and D.name = E.name and D.property = E.property and D.date = E.date
-AND D.RowNum < E.RowNum
+-- удаляем все дубликаты
+DELETE A
+FROM
+(
+    SELECT 
+           ROW_NUMBER() OVER (PARTITION BY ID, name, property, date ORDER BY date) N
+    FROM @A
+) A
+WHERE A.N > 1;
 
-delete D FROM
-    (
-    SELECT id,name,property,date, ROW_NUMBER() OVER(ORDER BY id,name,property,date) AS RowNum 
-    FROM A
-    )D
-    JOIN
-    (
-    SELECT id,name,property,date, ROW_NUMBER() OVER(ORDER BY id,name,property,date) AS RowNum 
-    FROM A
-    )E
-on D.id = E.id and D.name = E.name and D.property = E.property and D.date = E.date
-AND D.RowNum < E.RowNum
+--результат без дублей
+SELECT * FROM @A;
+
+
 
 /*
 Table cards_transfer
