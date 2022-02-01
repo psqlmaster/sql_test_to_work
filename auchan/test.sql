@@ -37,6 +37,7 @@ VALUES
 (3, '2019-07-10', 4000),
 (3, '2019-07-10', 5000);
 
+--первый вариант 
 WITH t
 AS (SELECT point,
            date,
@@ -60,6 +61,26 @@ SELECT t.point,
 FROM t
 GROUP BY t.point,
          t.date;
+
+--второй вариант в 1,5 раза работает быстрее
+WITH m
+AS (SELECT code,
+           point,
+           date,
+           inc AS summ
+    FROM @Income
+    UNION ALL
+    SELECT code,
+           point,
+           date,
+           -o.out
+    FROM @Outcome o)
+SELECT point,
+       CONVERT(NVARCHAR(10), date, 103),
+       SUM(SUM(summ)) OVER (PARTITION BY point ORDER BY date) AS cumm
+FROM m
+GROUP BY point,
+         date;
 
 
 --Create an SQL query that shows the TOP 3 authors who sold the most books in total!
