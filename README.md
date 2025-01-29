@@ -1,4 +1,5 @@
 ## тестовые задачи по sql
+- [🛠️ pgsyswatch, мое расширение для postgresql для расширенного мониторинга процессов](https://github.com/psqlmaster/pgsyswatch)
 
 - [примеры рабочего кода по sql](https://github.com/PerynFr/sql_test_to_work/tree/main/accounting)
 - мои видео:
